@@ -64,6 +64,7 @@ public class Switch extends Device
 		public MACTracker()
 		{
 			timer = new Timer(true);
+			liveAddresses = new ConcurrentHashMap();
 		}
 
 		public Iface getCacheIface(MACAddress macAddr)
