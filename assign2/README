@@ -1,0 +1,22 @@
+The directories symlinked are as follows:
+Code Overview
+The virtual network code consists of the following important packages and classes:
+• edu.wisc.cs.sdn.vnet - no need to modify in this package
+	- The main method (Main)
+	- Classes representing a network device and interfaces (Device, Iface)
+	- Code for creating a PCAP file containing all packets sent/received by a network device (DumpFile)
+• edu.wisc.cs.sdn.vnet.sw - add/modify code in this package to complete Part 2 - Skeleton code for a 
+virtual switch (Switch)
+• edu.wisc.cs.sdn.vnet.rt - add/modify code in this package to complete Part 3
+	- Skeleton code for a virtual router (Router)
+	- A complete implementation of an ARP cache (ArpCache, ArpEntry)
+	- A partial implementation of a route table (RouteTable, RouteEntry)
+• net.floodlightcontroller.packet - no need need to modify code in this package Code for parsing 
+and manipulating packet headers
+
+To test packets, see the Makefile for details, but here are the commands:
+make
+make mini_emu
+make run_virt_jar
+
+Note that the first command is the default, but otherwise the command is "make run_pox"
