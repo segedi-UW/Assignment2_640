@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Switch extends Device
 {	
 
-	private MACTracker tracker;
+	private final MACTracker tracker;
 	/**
 	 * Creates a router for a specific host.
 	 * @param host hostname for the router
@@ -39,12 +39,23 @@ public class Switch extends Device
 		/********************************************************************/
 		/* TODO: Handle packets                                             */
 		MACAddress src = etherPacket.getSourceMAC();
+		// record MAC
+		tracker.put(src, inIface);
 		MACAddress dst = etherPacket.getDestinationMAC();
-		
+		// need to determine outIface
+		// 1. Check cache
+		Iface outIface = tracker.getCacheIface(dst);
+		if (outIface != null) sendPacket(etherPacket, outIface);
+		// not cached, need to broadcast a message asking for iface
+		interfaces.forEach((name, iface) -> sendPacket(etherPacket, iface));
 		/********************************************************************/
 	}
 
-	/** @author AJ */
+	/** 
+	 * @author AJ 
+	 * A soft cache for MACAddress interfaces (Iface) to send data out
+	 * on. Resets each time a successful lookup occurs.
+	 * */
 	private class MACTracker
 	{
 		private Timer timer;
