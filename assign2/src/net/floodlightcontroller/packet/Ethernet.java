@@ -175,7 +175,7 @@ public class Ethernet extends BasePacket {
     }
     
     /**
-     * @return True is the Ethernet frame is multicast, False otherwise
+     * @return True if the Ethernet frame is multicast, False otherwise
      */
     public boolean isMulticast() {
         return destinationMACAddress.isMulticast();
