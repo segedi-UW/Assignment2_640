@@ -1,0 +1,16 @@
+bin
+*.jar
+*.egg-info
+*.pyo
+*.pyc
+ip_config
+arp_cache
+rtable.*
+pox
+*.swp
+packet
+rt
+vnet
+sw
+*.vim
+*.out
