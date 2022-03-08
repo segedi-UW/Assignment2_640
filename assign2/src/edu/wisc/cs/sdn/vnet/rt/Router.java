@@ -114,7 +114,8 @@ public class Router extends Device
 		bb.putShort(10, sum);
 
 		if(orig != sum) {
-			System.out.println("CheckSum didn't match");
+
+			System.out.println("CheckSum didn't match: " +orig+" : "+sum);
 			return;
 		}
 
