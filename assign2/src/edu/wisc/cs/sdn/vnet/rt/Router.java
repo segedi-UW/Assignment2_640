@@ -97,21 +97,23 @@ public class Router extends Device
 		
 		short orig = packet.getChecksum();
 		packet.setChecksum((short) 0);
-		byte headerLength = packet.getHeaderLength();
-		byte[] data = new byte[packet.getTotalLength()];
-		ByteBuffer bb = ByteBuffer.wrap(data);
-		short sum = (short) 0;
+		// byte headerLength = packet.getHeaderLength();
+		// byte[] data = new byte[packet.getTotalLength()];
+		// ByteBuffer bb = ByteBuffer.wrap(data);
+		packet.serialize();
+		
+		short sum = packet.getChecksum();
 
 		// compute checksum if needed
-		bb.rewind();
-		int accumulation = 0;
-		for (int i = 0; i < headerLength * 2; ++i) {
-			accumulation += 0xffff & bb.getShort();
-		}
-		accumulation = ((accumulation >> 16) & 0xffff)
-				+ (accumulation & 0xffff);
-		sum = (short) (~accumulation & 0xffff);
-		bb.putShort(10, sum);
+		// bb.rewind();
+		// int accumulation = 0;
+		// for (int i = 0; i < headerLength * 2; ++i) {
+		// 	accumulation += 0xffff & bb.getShort();
+		// }
+		// accumulation = ((accumulation >> 16) & 0xffff)
+		// 		+ (accumulation & 0xffff);
+		// sum = (short) (~accumulation & 0xffff);
+		// bb.putShort(10, sum);
 
 		if(orig != sum) {
 
