@@ -89,8 +89,10 @@ public class Router extends Device
 		
 		/********************************************************************/
 		/* TODO: Handle packets                                             */
-		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4)
+		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
+			System.out.println("Packet Type wasnt IPv4");
 			return;
+		}
 		IPv4 packet = (IPv4) etherPacket.getPayload();
 		
 		short orig = packet.getChecksum();
@@ -111,29 +113,40 @@ public class Router extends Device
 		sum = (short) (~accumulation & 0xffff);
 		bb.putShort(10, sum);
 
-		if(orig != sum) return;
+		if(orig != sum) {
+			System.out.println("CheckSum didn't match");
+			return;
+		}
 
 		packet.setTtl((byte) (packet.getTtl()-1));
 
-		if (packet.getTtl() <= (byte) 0) return;
+		if (packet.getTtl() <= (byte) 0) {
+			System.out.println("TTL was 0");
+			return;
+		}
 
 		packet.setChecksum(orig);
 
 		for(Iface iface : interfaces.values()) {
 			if(iface.getIpAddress() == packet.getDestinationAddress()){
+				System.out.println("Exact match in first Interface");
 				return;
 			}
 		}
 
 		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
 
-		if (entry == null) return;
+		if (entry == null) {
+			System.out.println("Route Entry was Null");
+			return;
+		}
 		
 		MACAddress addr = arpCache.lookup(entry.getDestinationAddress()).getMac();
 		etherPacket.setDestinationMACAddress(addr.toBytes());
 		etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
 		this.sendPacket(etherPacket, entry.getInterface());
+		System.out.println("Packet was sent to: " + entry.getInterface().getName());
 		
 		/********************************************************************/
 	}
