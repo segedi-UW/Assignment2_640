@@ -143,7 +143,7 @@ public class Router extends Device
 			System.out.println("Route Entry was Null");
 			return;
 		}
-		
+		// System.out.printf("Dest: %d", args);
 		MACAddress addr = arpCache.lookup(entry.getDestinationAddress()).getMac();
 		etherPacket.setDestinationMACAddress(addr.toBytes());
 		etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
