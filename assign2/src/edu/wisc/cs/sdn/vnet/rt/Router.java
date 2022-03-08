@@ -118,6 +118,7 @@ public class Router extends Device
 		if (packet.getTtl() <= (byte) 0) return;
 
 		packet.setChecksum(orig);
+
 		for(Iface iface : interfaces.values()) {
 			if(iface.getIpAddress() == packet.getDestinationAddress()){
 				return;
@@ -130,7 +131,7 @@ public class Router extends Device
 		
 		MACAddress addr = arpCache.lookup(entry.getDestinationAddress()).getMac();
 		etherPacket.setDestinationMACAddress(addr.toBytes());
-		etherPacket.setSourceMACAddress(inIface.getMacAddress().toBytes());
+		etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
 		this.sendPacket(etherPacket, entry.getInterface());
 		
