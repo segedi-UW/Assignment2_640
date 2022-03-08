@@ -282,6 +282,10 @@ public class Router extends Device
 
 		    // ArpCache lookup
 		    ArpEntry arpLook = arpCache.lookup(routeLook.getDestinationAddress());
+			if(arpLook == null){
+				System.out.println("ARP LOOK is null");
+				return;
+			}
 
 		    // Set new packet MACs MACAddress
 		    etherPacket.setDestinationMACAddress(arpLook.getMac().toBytes());
