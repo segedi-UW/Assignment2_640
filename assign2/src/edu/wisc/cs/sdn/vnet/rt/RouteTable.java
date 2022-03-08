@@ -48,7 +48,7 @@ public class RouteTable
 				int mask = entry.getMaskAddress();
 				// and the mask with the ip
 				int andResult = mask & ip;
-				System.out.printf("Gateway: %d , AND: %d\n", entry.getGatewayAddress(), andResult);
+				System.out.printf("Destination: %d , AND: %d\n", entry.getDestinationAddress(), andResult);
 				if (andResult == entry.getDestinationAddress()) {
 					// System.out.println("Matched");
 					if (andResult > longestMask) {
