@@ -1,10 +1,15 @@
 package edu.wisc.cs.sdn.vnet.rt;
 
+import java.nio.ByteBuffer;
+import java.util.jar.Attributes.Name;
+
 import edu.wisc.cs.sdn.vnet.Device;
 import edu.wisc.cs.sdn.vnet.DumpFile;
 import edu.wisc.cs.sdn.vnet.Iface;
 
 import net.floodlightcontroller.packet.Ethernet;
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.packet.MACAddress;
 
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
@@ -84,7 +89,50 @@ public class Router extends Device
 		
 		/********************************************************************/
 		/* TODO: Handle packets                                             */
+		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4)
+			return;
+		IPv4 packet = (IPv4) etherPacket.getPayload();
 		
+		short orig = packet.getChecksum();
+		packet.setChecksum((short) 0);
+		byte headerLength = packet.getHeaderLength();
+		byte[] data = new byte[packet.getTotalLength()];
+		ByteBuffer bb = ByteBuffer.wrap(data);
+		short sum = (short) 0;
+
+		// compute checksum if needed
+		bb.rewind();
+		int accumulation = 0;
+		for (int i = 0; i < headerLength * 2; ++i) {
+			accumulation += 0xffff & bb.getShort();
+		}
+		accumulation = ((accumulation >> 16) & 0xffff)
+				+ (accumulation & 0xffff);
+		sum = (short) (~accumulation & 0xffff);
+		bb.putShort(10, sum);
+
+		if(orig != sum) return;
+
+		packet.setTtl((byte) (packet.getTtl()-1));
+
+		if (packet.getTtl() <= (byte) 0) return;
+
+		packet.setChecksum(orig);
+		for(Iface iface : interfaces.values()) {
+			if(iface.getIpAddress() == packet.getDestinationAddress()){
+				return;
+			}
+		}
+
+		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
+
+		if (entry == null) return;
+		
+		MACAddress addr = arpCache.lookup(entry.getDestinationAddress()).getMac();
+		etherPacket.setDestinationMACAddress(addr.toBytes());
+		etherPacket.setSourceMACAddress(inIface.getMacAddress().toBytes());
+
+		this.sendPacket(etherPacket, entry.getInterface());
 		
 		/********************************************************************/
 	}
