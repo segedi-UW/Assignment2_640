@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,60 +33,35 @@ public class RouteTable
 	 * @param ip IP address
 	 * @return the matching route entry, null if none exists
 	 */
-	// public RouteEntry lookup(int ip)
-	// {
-	// 	synchronized(this.entries)
-	// 	{
-	// 		/*****************************************************************/
-	// 		/* TODO: Find the route entry with the longest prefix match	  */
-	// 		/* Need to check implementation works */
-	// 		/** @author AJ */
-	// 		RouteEntry longestMatch = null;
-	// 		int longestMask = 0;
-	// 		for (RouteEntry entry : entries) {
-	// 			// 1. get subnet mask
-	// 			int mask = entry.getMaskAddress();
-	// 			// and the mask with the ip
-	// 			int andResult = mask & ip;
-	// 			System.out.printf("Destination: %d , AND: %d\n", entry.getDestinationAddress(), andResult);
-	// 			if (andResult == entry.getDestinationAddress()) {
-	// 				System.out.println("Matched");
-	// 				if (andResult > longestMask) {
-	// 					longestMask = andResult;
-	// 					longestMatch = entry;
-	// 				}
-	// 			}
-	// 		}
-			
-	// 		return longestMatch;
-			
-	// 		/*****************************************************************/
-	// 	}
-	// }
 	public RouteEntry lookup(int ip)
 	{
 		synchronized(this.entries)
-        {
+		{
 			/*****************************************************************/
-			/* TODO: Find the route entry with the longest prefix match      */
+			/* TODO: Find the route entry with the longest prefix match	  */
+			/* Need to check implementation works */
+			/** @author AJ */
+			RouteEntry longestMatch = null;
+			int longestMask = 0;
+			for (RouteEntry entry : entries) {
+				// 1. get subnet mask
+				int mask = entry.getMaskAddress();
+				// and the mask with the ip
+				int andResult = mask & ip;
+				System.out.printf("Destination: %d , AND: %d\n", entry.getDestinationAddress(), andResult);
+				if (andResult == entry.getDestinationAddress()) {
+					System.out.println("Matched");
+					if (andResult > longestMask) {
+						longestMask = andResult;
+						longestMatch = entry;
+					}
+				}
+			}
 			
-	    // NEED TO LOOK OVER
-	    RouteEntry check;
-	    int closest = 0;
-	    RouteEntry longest = null;
-	    Iterator<RouteEntry> itr = entries.iterator();
-	    while(itr.hasNext()) {
-		check = itr.next();
-		if((check.getMaskAddress() & ip) > closest) {
-		    closest = (check.getMaskAddress() & ip);
-		    longest = check;
+			return longestMatch;
+			
+			/*****************************************************************/
 		}
-	    }
-
-			return longest;
-			
-			/*****************************************************************/
-        }
 	}
 	
 	/**
