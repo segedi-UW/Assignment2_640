@@ -51,7 +51,7 @@ public class RouteTable
 				System.out.printf("%d , %d\n", mask, andResult);
 				// if (andResult == mask) {
 					// System.out.println("Matched");
-					if (andResult >= longestMask) {
+					if (andResult > longestMask) {
 						longestMask = andResult;
 						longestMatch = entry;
 					}
