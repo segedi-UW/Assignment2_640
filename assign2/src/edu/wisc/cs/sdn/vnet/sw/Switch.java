@@ -47,6 +47,7 @@ public class Switch extends Device
 		Iface outIface = tracker.getCacheIface(dst);
 		if (outIface != null) sendPacket(etherPacket, outIface);
 		// not cached, need to broadcast a message asking for iface
+		// TODO do we need to make the packet a certain type to illicit response?
 		interfaces.forEach((name, iface) -> sendPacket(etherPacket, iface));
 		/********************************************************************/
 	}

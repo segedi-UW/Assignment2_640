@@ -9,3 +9,11 @@ run_virt_jar: build_virt_jar VirtualNetwork.jar
 	java -jar VirtualNetwork.jar -v s1
 build_virt_jar: VirtualNetwork.jar
 	ant
+mini_emu_multi: run_mininet.py topos/linear5_sw.topo
+	sudo ./run_mininet.py topos/linear5_sw.topo
+run_virt_jar_multi: build_virt_jar VirtualNetwork.jar
+	java -jar VirtualNetwork.jar -v s1 &
+	java -jar VirtualNetwork.jar -v s2 &
+	java -jar VirtualNetwork.jar -v s3 &
+	java -jar VirtualNetwork.jar -v s4 &
+	java -jar VirtualNetwork.jar -v s5 &
