@@ -143,7 +143,11 @@ public class Router extends Device
 			System.out.println("Route Entry was Null");
 			return;
 		}
-		MACAddress addr = arpCache.lookup(entry.getGatewayAddress() == 0 ? entry.getDestinationAddress() : entry.getGatewayAddress()).getMac();
+		int ip = entry.getGatewayAddress() == 0 ? entry.getDestinationAddress() : entry.getGatewayAddress();
+		System.out.println(ip);
+		System.out.println(arpCache);
+
+		MACAddress addr = arpCache.lookup(ip).getMac();
 		etherPacket.setDestinationMACAddress(addr.toBytes());
 		etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
