@@ -143,7 +143,7 @@ public class Router extends Device
 			System.out.println("Route Entry was Null");
 			return;
 		}
-		int ip = entry.getGatewayAddress() == 0 ? entry.getDestinationAddress() : entry.getGatewayAddress();
+		int ip = entry.getGatewayAddress() == 0 ? packet.getDestinationAddress() : entry.getDestinationAddress();
 		System.out.println(IPv4.fromIPv4Address(ip));
 		System.out.println(arpCache);
 
