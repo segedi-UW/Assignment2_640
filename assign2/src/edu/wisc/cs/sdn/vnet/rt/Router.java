@@ -136,7 +136,7 @@ public class Router extends Device
 				return;
 			}
 		}
-
+		System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
 		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
 
 		if (entry == null) {
