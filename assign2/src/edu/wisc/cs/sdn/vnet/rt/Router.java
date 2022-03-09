@@ -150,10 +150,12 @@ public class Router extends Device
 		eth.setDestinationMACAddress(addr.toBytes());
 		eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
+        System.out.println("\nSending:");
 		System.out.println(eth);
 
 		this.sendPacket(eth, entry.getInterface());
 		System.out.println("Packet was sent to: " + entry.getInterface().getName());
+        separate();
 		
 		/********************************************************************/
 	}
