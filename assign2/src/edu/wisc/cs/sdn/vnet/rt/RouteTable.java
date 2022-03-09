@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,36 +34,86 @@ public class RouteTable
 	 * @param ip IP address
 	 * @return the matching route entry, null if none exists
 	 */
+	// public RouteEntry lookup(int ip)
+	// {
+	// 	synchronized(this.entries)
+	// 	{
+	// 		/*****************************************************************/
+	// 		/* TODO: Find the route entry with the longest prefix match	  */
+	// 		/* Need to check implementation works */
+	// 		/** @author AJ */
+	// 		RouteEntry longestMatch = null;
+	// 		int longestMask = 0;
+	// 		for (RouteEntry entry : entries) {
+	// 			// 1. get subnet mask
+	// 			int mask = entry.getMaskAddress();
+	// 			// and the mask with the ip
+	// 			int andResult = mask & ip;
+	// 			//System.out.println(entry);
+	// 			// System.out.printf("Destination: %d , AND: %d\n", entry.getDestinationAddress(), andResult);
+	// 			if (andResult == entry.getDestinationAddress()) {
+	// 				//System.out.println("Matched");
+	// 				if (andResult > longestMask) {
+	// 					longestMask = andResult;
+	// 					longestMatch = entry;
+	// 				}
+	// 			}
+	// 		}
+			
+	// 		return longestMatch;
+			
+	// 		/*****************************************************************/
+	// 	}
+	// }
+
 	public RouteEntry lookup(int ip)
 	{
 		synchronized(this.entries)
-		{
+        {
 			/*****************************************************************/
-			/* TODO: Find the route entry with the longest prefix match	  */
-			/* Need to check implementation works */
-			/** @author AJ */
-			RouteEntry longestMatch = null;
-			int longestMask = 0;
-			for (RouteEntry entry : entries) {
-				// 1. get subnet mask
-				int mask = entry.getMaskAddress();
-				// and the mask with the ip
-				int andResult = mask & ip;
-				//System.out.println(entry);
-				// System.out.printf("Destination: %d , AND: %d\n", entry.getDestinationAddress(), andResult);
-				if (andResult == entry.getDestinationAddress()) {
-					//System.out.println("Matched");
-					if (andResult > longestMask) {
-						longestMask = andResult;
-						longestMatch = entry;
+			/* TODO: Find the route entry with the longest prefix match      */
+			
+			if (ip < 0) {
+				return null;
+			}
+
+			if (entries == null) {
+				return null;
+			}
+
+			ListIterator<RouteEntry> it = entries.listIterator();
+			int lm = 0;
+			RouteEntry re = null;;
+			boolean dbg = true;
+
+			if (dbg) System.out.println("Lookup RouteTable..." + IPv4.fromIPv4Address(ip));
+			while (it.hasNext()) {
+				RouteEntry curRe = it.next();
+				for (int i = 0; i < 32; i++) {
+					if (ip >>> i == curRe.getDestinationAddress() >>> i) {
+						if (lm < 32 - i) {
+							lm = 32 - i;
+							re = curRe;
+						}else {
+							break;
+						}
 					}
 				}
 			}
-			
-			return longestMatch;
+
+			if (dbg)
+				if (re != null) {
+					System.out.println(re.getInterface().getMacAddress().toString());
+					System.out.println("RouteTable Match dstAddr " + IPv4.fromIPv4Address(re.getDestinationAddress()));
+					System.out.println("RouteTable Match gtwAddr " + IPv4.fromIPv4Address(re.getGatewayAddress()));	
+				}else {
+					System.out.println("RouteTable No Match");
+				}
+
+			return re;
 			
 			/*****************************************************************/
-		}
+        }
 	}
 	
 	/**
