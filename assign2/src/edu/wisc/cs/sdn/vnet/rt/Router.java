@@ -118,7 +118,7 @@ public class Router extends Device
 		}
 
         // ttl check
-		packet.setTtl((byte) (packet.getTtl()-1));
+		packet = packet.setTtl((byte) (packet.getTtl()-1));
 
 		if (packet.getTtl() <= (byte) 0) {
 			System.out.println("TTL was 0");
@@ -148,21 +148,20 @@ public class Router extends Device
 		int ip = gateAddr == 0 ? packet.getDestinationAddress() : gateAddr;
 		System.out.println("Ip to send to: " + IPv4.fromIPv4Address(ip));
 
-		MACAddress addr = arpCache.lookup(ip).getMac();
-		eth.setDestinationMACAddress(addr.toBytes());
-		eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+		ArpEntry arpEntry = arpCache.lookup(ip);
+		if (arpEntry == null) return;
+			
+		MACAddress addr = arpEntry.getMac();
+		eth = eth.setDestinationMACAddress(addr.toBytes());
+		eth = eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
-        System.out.println("\nSending:");
-		System.out.println(eth);
-        // checks for standard packet
-        if (eth.getEtherType() != Ethernet.TYPE_IPv4) System.out.println("Sending Bad Packet: non IPv4");
-		eth.serialize();
-
-		if (!sendPacket(eth, entry.getInterface())) System.err.println("Failed to send packet. Check headers");
+		// checks for standard packet
+		if (!sendPacket(eth, entry.getInterface()))
+			System.err.println("Failed to send packet. Check headers");
 
 		System.out.println("Packet was sent to: " + entry.getInterface().getName());
-        separate();
-		
+		separate();
+
 		/********************************************************************/
 	}
 }
