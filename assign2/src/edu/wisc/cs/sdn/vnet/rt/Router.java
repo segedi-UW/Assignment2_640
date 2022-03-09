@@ -144,7 +144,7 @@ public class Router extends Device
 			return;
 		}
 		int ip = entry.getGatewayAddress() == 0 ? entry.getDestinationAddress() : entry.getGatewayAddress();
-		System.out.println(ip);
+		System.out.println(IPv4.fromIPv4Address(ip));
 		System.out.println(arpCache);
 
 		MACAddress addr = arpCache.lookup(ip).getMac();
