@@ -1,7 +1,6 @@
 package edu.wisc.cs.sdn.vnet.rt;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.jar.Attributes.Name;
 
 import edu.wisc.cs.sdn.vnet.Device;
@@ -83,217 +82,73 @@ public class Router extends Device
 	 * @param etherPacket the Ethernet packet that was received
 	 * @param inIface the interface on which the packet was received
 	 */
-	// public void handlePacket(Ethernet etherPacket, Iface inIface)
-	// {
-	// 	System.out.println("*** -> Received packet: " +
-	// 			etherPacket.toString().replace("\n", "\n\t"));
-		
-	// 	/********************************************************************/
-	// 	/* TODO: Handle packets                                             */
-	// 	if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
-	// 		System.out.println("Packet Type wasnt IPv4");
-	// 		return;
-	// 	}
-	// 	IPv4 packet = (IPv4) etherPacket.getPayload();
-		
-	// 	short orig = packet.getChecksum();
-	// 	packet.setChecksum((short) 0);
-	// 	// byte headerLength = packet.getHeaderLength();
-	// 	// byte[] data = new byte[packet.getTotalLength()];
-	// 	// ByteBuffer bb = ByteBuffer.wrap(data);
-	// 	packet.serialize();
-		
-	// 	short sum = packet.getChecksum();
-
-	// 	// compute checksum if needed
-	// 	// bb.rewind();
-	// 	// int accumulation = 0;
-	// 	// for (int i = 0; i < headerLength * 2; ++i) {
-	// 	// 	accumulation += 0xffff & bb.getShort();
-	// 	// }
-	// 	// accumulation = ((accumulation >> 16) & 0xffff)
-	// 	// 		+ (accumulation & 0xffff);
-	// 	// sum = (short) (~accumulation & 0xffff);
-	// 	// bb.putShort(10, sum);
-
-	// 	if(orig != sum) {
-
-	// 		System.out.println("CheckSum didn't match: " +orig+" : "+sum);
-	// 		return;
-	// 	}
-
-	// 	packet.setTtl((byte) (packet.getTtl()-1));
-
-	// 	if (packet.getTtl() <= (byte) 0) {
-	// 		System.out.println("TTL was 0");
-	// 		return;
-	// 	}
-
-	// 	packet.setChecksum(orig);
-
-	// 	for(Iface iface : interfaces.values()) {
-	// 		if(iface.getIpAddress() == packet.getDestinationAddress()){
-	// 			System.out.println("Exact match in first Interface");
-	// 			return;
-	// 		}
-	// 	}
-
-	// 	RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
-
-	// 	if (entry == null) {
-	// 		System.out.println("Route Entry was Null");
-	// 		return;
-	// 	}
-	// 	// System.out.printf("Dest: %d", args);
-	// 	MACAddress addr = arpCache.lookup(entry.getDestinationAddress()).getMac();
-	// 	etherPacket.setDestinationMACAddress(addr.toBytes());
-	// 	etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
-
-	// 	this.sendPacket(etherPacket, entry.getInterface());
-	// 	System.out.println("Packet was sent to: " + entry.getInterface().getName());
-		
-	// 	/********************************************************************/
-	// }
 	public void handlePacket(Ethernet etherPacket, Iface inIface)
 	{
 		System.out.println("*** -> Received packet: " +
-                etherPacket.toString().replace("\n", "\n\t"));
+				etherPacket.toString().replace("\n", "\n\t"));
 		
 		/********************************************************************/
 		/* TODO: Handle packets                                             */
-		
-
-		// Ethertype IPv4 check NEED TO FIND ETHERTYPES
-		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4) {
-		    System.out.println("Dropping Packet Due to EtherType\n");
-		    return;
+		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
+			System.out.println("Packet Type wasnt IPv4");
+			return;
 		}
-		else {
-		    net.floodlightcontroller.packet.IPv4 payload = (net.floodlightcontroller.packet.IPv4) etherPacket.getPayload();
+		IPv4 packet = (IPv4) etherPacket.getPayload();
+		
+		short orig = packet.getChecksum();
+		packet.setChecksum((short) 0);
+		// byte headerLength = packet.getHeaderLength();
+		// byte[] data = new byte[packet.getTotalLength()];
+		// ByteBuffer bb = ByteBuffer.wrap(data);
+		packet.serialize();
+		
+		short sum = packet.getChecksum();
 
-		    // Serialize copypasta NEED TO TRIM
-		    
-		    byte[] buf = payload.serialize();
+		// compute checksum if needed
+		// bb.rewind();
+		// int accumulation = 0;
+		// for (int i = 0; i < headerLength * 2; ++i) {
+		// 	accumulation += 0xffff & bb.getShort();
+		// }
+		// accumulation = ((accumulation >> 16) & 0xffff)
+		// 		+ (accumulation & 0xffff);
+		// sum = (short) (~accumulation & 0xffff);
+		// bb.putShort(10, sum);
 
-		    int length = buf.length;
-		    int i = 0;
-		    
-		    long sum = 0;
-		    long data;
+		if(orig != sum) {
 
-		    while(length > 1) {
-			data = (((buf[i] << 8) & 0xFF00) | ((buf[i + 1]) & 0xFF));
-			sum += data;
-			if((sum & 0xFFFF0000) > 0) {
-			    sum = sum & 0xFFFF;
-			    sum += 1;
-			}
-
-			i += 2;
-			length -= 2;
-		    }
-
-		    if(length > 0) {
-			sum += (buf[i] << 8 & 0xFF00);
-			if((sum & 0xFFFF0000) > 0) {
-			    sum = sum & 0xFFFF;
-			    sum += 1;
-			}
-		    }
-
-		    sum = ~sum;
-		    sum = sum & 0xFFFF;
-
-		    /*
-		      byte[] payloadData = null; */
-		    /*
-		    if(payload != null) {
-			payload.setParent(this);
-			payloadData = payload.serialize();
-			}*/
-		    
-		    /*
-		    int optionsLength = 0;
-		    if(payload.getOptions() != null)
-			optionsLength = payload.getOptions().length / 4;
-		    payload.getHeaderLength() = (byte) (5 + optionsLength);
-		    payload.getTotalLength = (short) (payload.getHeaderLength() * 4 + ((payloadData == null) ? 0
-									 : payloadData.length));
-		    
-		    byte[] data = new byte[payload.getHeaderLength()];
-		    ByteBuffer bb = ByteBuffer.wrap(data);
-		    
-		    bb.put((byte) (((payload.getVersion() & 0xf) << 4) | (payload.getHeaderLength() & 0xf)));
-		    bb.put(payload.getDiffServ());
-		    bb.putShort(payload.getTotalLength());
-		    bb.putInt(payload.getSourceAddress());
-		    bb.putInt(payload.getDestinationAddress());
-		    if(payload.getOptions() != null)
-			bb.put(payload.getOptions());
-		    if(payloadData != null)
-			bb.put(payloadData);
-		    
-		    bb.rewind();
-		    */
-		    /*
-		    long accumulation = 0;
-		    for(int i = 0; i < 9; ++i) {
-			accumulation += ~bb.getShort();
-		    }
-		    accumulation = accumulation;
-		    */
-		    if(payload.getChecksum() == 0) {
-			System.out.println("CHECKSUM IS 0!!!");
-		    }
-		    System.out.println("Payload Checksum:\t" + payload.getChecksum());
-		    System.out.println("Calculated Checksum:\t" + sum);
-		    
-		    if(payload.getChecksum() == sum) {
-			System.out.println("Dropping Packet Due to Checksum\n");
+			System.out.println("CheckSum didn't match: " +orig+" : "+sum);
 			return;
-		    }
+		}
 
-		    // End copypasta
+		packet.setTtl((byte) (packet.getTtl()-1));
 
-		    // Decrement TTL
-		    if((payload.getTtl() - 1) == 0) {
-			System.out.println("Dropping Packet Due to TTL\n");
+		if (packet.getTtl() <= (byte) 0) {
+			System.out.println("TTL was 0");
 			return;
-		    }
-		    else
-			payload.setTtl((byte)((int)payload.getTtl() - 1));
+		}
 
-		    // Check interfaces
-		    for(Map.Entry<String, Iface> entry : getInterfaces().entrySet()) {
-			if(entry.getValue().getIpAddress() == payload.getDestinationAddress()) {
-			    System.out.println("Dropping Packet Due to Interface Address Conflict\n");
-			    return;
-			}
-		    }
+		packet.setChecksum(orig);
 
-		    // FORWARD PACKET
-
-		    // Make sure there is a matching RouteEntry
-		    RouteEntry routeLook = routeTable.lookup(payload.getDestinationAddress());
-		    if(routeLook == null) {
-			System.out.println("Dropping Packet Due to the RouteEntry being null!\n");
-			return;
-		    }
-
-		    // ArpCache lookup
-		    ArpEntry arpLook = arpCache.lookup(routeLook.getDestinationAddress());
-			if(arpLook == null){
-				System.out.println("ARP LOOK is null");
+		for(Iface iface : interfaces.values()) {
+			if(iface.getIpAddress() == packet.getDestinationAddress()){
+				System.out.println("Exact match in first Interface");
 				return;
 			}
-
-		    // Set new packet MACs MACAddress
-		    etherPacket.setDestinationMACAddress(arpLook.getMac().toBytes());
-		    etherPacket.setSourceMACAddress(routeLook.getInterface().getMacAddress().toBytes());
-
-		    // Send packet
-		    sendPacket(etherPacket, routeLook.getInterface());
 		}
+
+		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
+
+		if (entry == null) {
+			System.out.println("Route Entry was Null");
+			return;
+		}
+		MACAddress addr = arpCache.lookup(entry.getGatewayAddress() == 0 ? entry.getDestinationAddress() : entry.getGatewayAddress()).getMac();
+		etherPacket.setDestinationMACAddress(addr.toBytes());
+		etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+
+		this.sendPacket(etherPacket, entry.getInterface());
+		System.out.println("Packet was sent to: " + entry.getInterface().getName());
 		
 		/********************************************************************/
 	}
