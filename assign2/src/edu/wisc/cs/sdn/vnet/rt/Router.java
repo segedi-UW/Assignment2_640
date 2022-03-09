@@ -108,7 +108,6 @@ public class Router extends Device
 		// byte headerLength = packet.getHeaderLength();
 		// byte[] data = new byte[packet.getTotalLength()];
 		// ByteBuffer bb = ByteBuffer.wrap(data);
-		byte[] bytes = packet.serialize();
 		
 		short sum = packet.getChecksum();
 
@@ -140,6 +139,8 @@ public class Router extends Device
 
 		packet.setChecksum(orig);
 
+
+
 		for(Iface iface : interfaces.values()) {
 			if(iface.getIpAddress() == packet.getDestinationAddress()){
 				System.out.println("Exact match in first Interface");
@@ -160,12 +161,13 @@ public class Router extends Device
 		System.out.println(IPv4.fromIPv4Address(ip));
 
 		MACAddress addr = arpCache.lookup(ip).getMac();
-		etherPacket.setDestinationMACAddress(addr.toBytes());
-		etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+		Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
+		eth.setDestinationMACAddress(addr.toBytes());
+		eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
-		System.out.println(etherPacket);
+		System.out.println(eth);
 
-		this.sendPacket(etherPacket, entry.getInterface());
+		this.sendPacket(eth, entry.getInterface());
 		System.out.println("Packet was sent to: " + entry.getInterface().getName());
 		
 		/********************************************************************/
