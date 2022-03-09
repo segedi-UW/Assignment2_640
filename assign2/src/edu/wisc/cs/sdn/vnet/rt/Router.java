@@ -88,14 +88,14 @@ public class Router extends Device
 	 */
 	public void handlePacket(Ethernet etherPacket, Iface inIface)
 	{
-		System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
+		//System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
 		System.out.println("*** -> Received packet: " +
 				etherPacket.toString().replace("\n", "\n\t"));
 		
 		/********************************************************************/
 		/* TODO: Handle packets                                             */
 		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
-			System.out.println("Packet Type wasnt IPv4");
+			System.out.println("Packet Type wasn't IPv4: " + etherPacket.getEtherType());
             separate();
 			return;
 		}
@@ -103,9 +103,10 @@ public class Router extends Device
 
 		IPv4 packet = (IPv4) etherPacket.getPayload();
 		
+        // checksum
 		short orig = packet.getChecksum();
 		packet.setChecksum((short) 0);
-		
+
 		packet.serialize();
 		short sum = packet.getChecksum();
 
@@ -115,6 +116,7 @@ public class Router extends Device
 			return;
 		}
 
+        // ttl check
 		packet.setTtl((byte) (packet.getTtl()-1));
 
 		if (packet.getTtl() <= (byte) 0) {
@@ -123,8 +125,7 @@ public class Router extends Device
 			return;
 		}
 
-		packet.setChecksum(orig);
-
+        // immediate interface check
 		for(Iface iface : interfaces.values()) {
 			if(iface.getIpAddress() == packet.getDestinationAddress()){
 				System.out.println("Exact match in first Interface");
@@ -132,7 +133,7 @@ public class Router extends Device
 				return;
 			}
 		}
-		System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
+		//System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
 
 		Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
 		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
@@ -142,9 +143,9 @@ public class Router extends Device
             separate();
 			return;
 		}
-
-		int ip = entry.getGatewayAddress() == 0 ? packet.getDestinationAddress() : entry.getGatewayAddress();
-		System.out.println(IPv4.fromIPv4Address(ip));
+        int gateAddr = entry.getGatewayAddress();
+		int ip = gateAddr == 0 ? packet.getDestinationAddress() : gateAddr;
+		System.out.println("Ip to send to: " + IPv4.fromIPv4Address(ip));
 
 		MACAddress addr = arpCache.lookup(ip).getMac();
 		eth.setDestinationMACAddress(addr.toBytes());
@@ -152,8 +153,10 @@ public class Router extends Device
 
         System.out.println("\nSending:");
 		System.out.println(eth);
+        // checks for standard packet
+        if (eth.getChecksum() <= 0) System.out.println("Sending Bad Packet: checksum");
 
-		this.sendPacket(eth, entry.getInterface());
+		sendPacket(eth, entry.getInterface());
 		System.out.println("Packet was sent to: " + entry.getInterface().getName());
         separate();
 		
