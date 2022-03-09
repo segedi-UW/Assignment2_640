@@ -105,26 +105,11 @@ public class Router extends Device
 		
 		short orig = packet.getChecksum();
 		packet.setChecksum((short) 0);
-		// byte headerLength = packet.getHeaderLength();
-		// byte[] data = new byte[packet.getTotalLength()];
-		// ByteBuffer bb = ByteBuffer.wrap(data);
 		
 		packet.serialize();
 		short sum = packet.getChecksum();
 
-		// compute checksum if needed
-		// bb.rewind();
-		// int accumulation = 0;
-		// for (int i = 0; i < headerLength * 2; ++i) {
-		// 	accumulation += 0xffff & bb.getShort();
-		// }
-		// accumulation = ((accumulation >> 16) & 0xffff)
-		// 		+ (accumulation & 0xffff);
-		// sum = (short) (~accumulation & 0xffff);
-		// bb.putShort(10, sum);
-
 		if(orig != sum) {
-
 			System.out.println("CheckSum didn't match: " +orig+" : "+sum);
             separate();
 			return;
@@ -148,6 +133,8 @@ public class Router extends Device
 			}
 		}
 		System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
+
+		Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
 		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
 
 		if (entry == null) {
@@ -160,7 +147,6 @@ public class Router extends Device
 		System.out.println(IPv4.fromIPv4Address(ip));
 
 		MACAddress addr = arpCache.lookup(ip).getMac();
-		Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
 		eth.setDestinationMACAddress(addr.toBytes());
 		eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
