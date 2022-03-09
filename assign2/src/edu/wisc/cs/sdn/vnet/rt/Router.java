@@ -77,6 +77,10 @@ public class Router extends Device
 		System.out.println("----------------------------------");
 	}
 
+    private void separate() {
+        System.out.println("\n_\n");
+    }
+
 	/**
 	 * Handle an Ethernet packet received on a specific interface.
 	 * @param etherPacket the Ethernet packet that was received
@@ -92,6 +96,7 @@ public class Router extends Device
 		/* TODO: Handle packets                                             */
 		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
 			System.out.println("Packet Type wasnt IPv4");
+            separate();
 			return;
 		}
 
@@ -121,6 +126,7 @@ public class Router extends Device
 		if(orig != sum) {
 
 			System.out.println("CheckSum didn't match: " +orig+" : "+sum);
+            separate();
 			return;
 		}
 
@@ -128,6 +134,7 @@ public class Router extends Device
 
 		if (packet.getTtl() <= (byte) 0) {
 			System.out.println("TTL was 0");
+            separate();
 			return;
 		}
 
@@ -136,6 +143,7 @@ public class Router extends Device
 		for(Iface iface : interfaces.values()) {
 			if(iface.getIpAddress() == packet.getDestinationAddress()){
 				System.out.println("Exact match in first Interface");
+                separate();
 				return;
 			}
 		}
@@ -144,6 +152,7 @@ public class Router extends Device
 
 		if (entry == null) {
 			System.out.println("Route Entry was Null");
+            separate();
 			return;
 		}
 
