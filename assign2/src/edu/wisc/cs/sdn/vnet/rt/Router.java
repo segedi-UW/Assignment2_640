@@ -84,6 +84,7 @@ public class Router extends Device
 	 */
 	public void handlePacket(Ethernet etherPacket, Iface inIface)
 	{
+		System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
 		System.out.println("*** -> Received packet: " +
 				etherPacket.toString().replace("\n", "\n\t"));
 		
@@ -94,7 +95,6 @@ public class Router extends Device
 			return;
 		}
 
-		System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
 
 		IPv4 packet = (IPv4) etherPacket.getPayload();
 		
