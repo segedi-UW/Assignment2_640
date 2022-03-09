@@ -86,103 +86,173 @@ public class Router extends Device
 	 * @param etherPacket the Ethernet packet that was received
 	 * @param inIface the interface on which the packet was received
 	 */
+	// public void handlePacket(Ethernet etherPacket, Iface inIface)
+	// {
+	// 	//System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
+	// 	// TODO remove
+	// 	if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4)
+	// 		return;
+
+	// 	System.out.println("*** -> Received packet: " +
+	// 			etherPacket.toString().replace("\n", "\n\t"));
+		
+	// 	/********************************************************************/
+	// 	/* TODO: Handle packets                                             */
+	// 	if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
+	// 		System.out.println("Packet Type wasn't IPv4: " + etherPacket.getEtherType());
+    //         separate();
+	// 		return;
+	// 	}
+
+
+	// 	IPv4 packet = (IPv4) etherPacket.getPayload();
+		
+    //     // checksum
+	// 	short orig = packet.getChecksum();
+	// 	packet.setChecksum((short) 0);
+	// 	if (packet.getChecksum() != 0) {
+	// 		System.out.println("ERROR: checksum was not set correctly");
+	// 		return;
+	// 	}
+
+	// 	packet.serialize(); // recomputes checksum for us when 0
+	// 	if (packet.getChecksum() == 0) {
+	// 		System.out.println("ERROR: checksum was not set correctly by serialize");
+	// 		return;
+	// 	}
+	// 	short sum = packet.getChecksum();
+
+	// 	if(orig != sum) {
+	// 		System.out.println("CheckSum didn't match: " +orig+" : "+sum);
+    //         separate();
+	// 		return;
+	// 	}
+
+    //     // ttl check
+	// 	byte ttl = packet.getTtl();
+	// 	packet.setTtl((byte) (packet.getTtl()-1));
+	// 	if (packet.getTtl() == ttl) {
+	// 		System.out.println("ERROR: ttl was not set correctly");
+	// 	}
+
+	// 	if (packet.getTtl() <= (byte) 0) {
+	// 		System.out.println("TTL was 0");
+    //         separate();
+	// 		return;
+	// 	}
+
+    //     // immediate interface check
+	// 	for(Iface iface : interfaces.values()) {
+	// 		if(iface.getIpAddress() == packet.getDestinationAddress()){
+	// 			System.out.println("Exact match in first Interface");
+    //             separate();
+	// 			return;
+	// 		}
+	// 	}
+	// 	//System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
+	// 	// NEED TO RECOMPUTE THE CHECKSUM AFTER CHANGING TTL
+	// 	packet.resetChecksum();
+	// 	packet.serialize();
+	// 	if (packet.getChecksum() == 0) {
+	// 		System.out.println("ERROR: checksum not set properly after reset");
+	// 	}
+
+	// 	Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
+	// 	RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
+
+	// 	if (entry == null) {
+	// 		System.out.println("Route Entry was Null");
+    //         separate();
+	// 		return;
+	// 	}
+    //     int gateAddr = entry.getGatewayAddress();
+	// 	int ip = gateAddr == 0 ? packet.getDestinationAddress() : gateAddr;
+	// 	System.out.println("Ip to send to: " + IPv4.fromIPv4Address(ip));
+
+	// 	ArpEntry arpEntry = arpCache.lookup(ip);
+	// 	if (arpEntry == null) return;
+			
+	// 	MACAddress addr = arpEntry.getMac();
+	// 	eth.setDestinationMACAddress(addr.toBytes());
+	// 	eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+
+	// 	// checks for standard packet
+	// 	if (!sendPacket(eth, entry.getInterface()))
+	// 		System.err.println("Failed to send packet. Check headers");
+
+	// 	System.out.println("Packet was sent to: " + entry.getInterface().getName());
+	// 	separate();
+
+	// 	/********************************************************************/
+	// }
+
 	public void handlePacket(Ethernet etherPacket, Iface inIface)
 	{
-		//System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
-		// TODO remove
-		if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4)
-			return;
-
 		System.out.println("*** -> Received packet: " +
-				etherPacket.toString().replace("\n", "\n\t"));
+                etherPacket.toString().replace("\n", "\n\t"));
 		
 		/********************************************************************/
 		/* TODO: Handle packets                                             */
-		if(etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
-			System.out.println("Packet Type wasn't IPv4: " + etherPacket.getEtherType());
-            separate();
-			return;
-		}
 
+		boolean dbg = true;
 
-		IPv4 packet = (IPv4) etherPacket.getPayload();
-		
-        // checksum
-		short orig = packet.getChecksum();
-		packet.setChecksum((short) 0);
-		if (packet.getChecksum() != 0) {
-			System.out.println("ERROR: checksum was not set correctly");
-			return;
-		}
+		if (dbg) System.out.println("Router Checking Ethernet Type");
+		if (etherPacket.getEtherType() == Ethernet.TYPE_IPv4) {
 
-		packet.serialize(); // recomputes checksum for us when 0
-		if (packet.getChecksum() == 0) {
-			System.out.println("ERROR: checksum was not set correctly by serialize");
-			return;
-		}
-		short sum = packet.getChecksum();
+			IPv4 header = (IPv4)etherPacket.getPayload();
+			short chksm = header.getChecksum();
+			header = header.setChecksum((short)0);
+			byte[] serialized = header.serialize();
+			header = (IPv4)header.deserialize(serialized, 0, serialized.length);
 
-		if(orig != sum) {
-			System.out.println("CheckSum didn't match: " +orig+" : "+sum);
-            separate();
-			return;
-		}
+			if (dbg) System.out.println("Router Checking Checksum");
+			if (chksm == header.getChecksum()) {
+				header = header.setTtl((byte)(header.getTtl() - 1));
 
-        // ttl check
-		byte ttl = packet.getTtl();
-		packet.setTtl((byte) (packet.getTtl()-1));
-		if (packet.getTtl() == ttl) {
-			System.out.println("ERROR: ttl was not set correctly");
-		}
+				if (dbg) System.out.println("Router Checking TTL");
+				if (header.getTtl() > (byte)0) {
 
-		if (packet.getTtl() <= (byte) 0) {
-			System.out.println("TTL was 0");
-            separate();
-			return;
-		}
+					header = header.setChecksum((short)0);
+					serialized = header.serialize();
+					header = (IPv4)header.deserialize(serialized, 0, serialized.length);
+					Ethernet nep = (Ethernet)etherPacket.setPayload(header);
+					
+					if (dbg) System.out.println("Router Checking dst == router interface");
+					for (Iface ifa : interfaces.values()) {
+						if (ifa.getIpAddress() == header.getDestinationAddress()) {
+							return;
+						}
+					}
 
-        // immediate interface check
-		for(Iface iface : interfaces.values()) {
-			if(iface.getIpAddress() == packet.getDestinationAddress()){
-				System.out.println("Exact match in first Interface");
-                separate();
-				return;
+					//Forward packet
+
+					if (dbg) System.out.println("Router Lookup RouteTable");
+					RouteEntry re = routeTable.lookup(header.getDestinationAddress());
+					if (re != null) {
+						ArpEntry an = null;
+
+						if (dbg) System.out.println("Router Lookup ARPCache");
+						if (re.getGatewayAddress() != 0) {
+							an = arpCache.lookup(re.getGatewayAddress());
+						}else {
+							an = arpCache.lookup(header.getDestinationAddress());
+						}
+						
+						if (dbg) System.out.println("Router Mod Ethernet Frame");
+						if (an != null) {
+							MACAddress dstMac = an.getMac();
+							MACAddress srcMac = re.getInterface().getMacAddress();
+							nep = nep.setDestinationMACAddress(dstMac.toBytes());
+							nep = nep.setSourceMACAddress(srcMac.toBytes());
+						}
+
+						if (dbg) System.out.println("Router Sending Packet");
+						sendPacket(nep, re.getInterface());
+					}
+				}
 			}
 		}
-		//System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
-		// NEED TO RECOMPUTE THE CHECKSUM AFTER CHANGING TTL
-		packet.resetChecksum();
-		packet.serialize();
-		if (packet.getChecksum() == 0) {
-			System.out.println("ERROR: checksum not set properly after reset");
-		}
-
-		Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
-		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
-
-		if (entry == null) {
-			System.out.println("Route Entry was Null");
-            separate();
-			return;
-		}
-        int gateAddr = entry.getGatewayAddress();
-		int ip = gateAddr == 0 ? packet.getDestinationAddress() : gateAddr;
-		System.out.println("Ip to send to: " + IPv4.fromIPv4Address(ip));
-
-		ArpEntry arpEntry = arpCache.lookup(ip);
-		if (arpEntry == null) return;
-			
-		MACAddress addr = arpEntry.getMac();
-		eth.setDestinationMACAddress(addr.toBytes());
-		eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
-
-		// checks for standard packet
-		if (!sendPacket(eth, entry.getInterface()))
-			System.err.println("Failed to send packet. Check headers");
-
-		System.out.println("Packet was sent to: " + entry.getInterface().getName());
-		separate();
-
+		
 		/********************************************************************/
 	}
 }
