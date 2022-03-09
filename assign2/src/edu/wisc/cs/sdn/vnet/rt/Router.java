@@ -109,6 +109,7 @@ public class Router extends Device
 		// byte[] data = new byte[packet.getTotalLength()];
 		// ByteBuffer bb = ByteBuffer.wrap(data);
 		
+		packet.serialize();
 		short sum = packet.getChecksum();
 
 		// compute checksum if needed
@@ -138,8 +139,6 @@ public class Router extends Device
 		}
 
 		packet.setChecksum(orig);
-
-
 
 		for(Iface iface : interfaces.values()) {
 			if(iface.getIpAddress() == packet.getDestinationAddress()){
