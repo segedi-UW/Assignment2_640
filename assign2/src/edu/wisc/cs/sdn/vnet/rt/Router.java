@@ -165,6 +165,7 @@ public class Router extends Device
 
 		this.sendPacket(etherPacket, entry.getInterface());
 		System.out.println("Packet was sent to: " + entry.getInterface().getName());
+        separate();
 		
 		/********************************************************************/
 	}
