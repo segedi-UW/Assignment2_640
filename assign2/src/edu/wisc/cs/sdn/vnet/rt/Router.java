@@ -89,8 +89,11 @@ public class Router extends Device
 	public void handlePacket(Ethernet etherPacket, Iface inIface)
 	{
 		//System.out.println("Read From: " + IPv4.fromIPv4Address(inIface.getIpAddress()));
-		if (etherPacket.getEtherType() == Ethernet.TYPE_IPv4)
-			System.out.println("*** -> Received packet: " +
+		// TODO remove
+		if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4)
+			return;
+
+		System.out.println("*** -> Received packet: " +
 				etherPacket.toString().replace("\n", "\n\t"));
 		
 		/********************************************************************/
@@ -107,8 +110,16 @@ public class Router extends Device
         // checksum
 		short orig = packet.getChecksum();
 		packet.setChecksum((short) 0);
+		if (packet.getChecksum() != 0) {
+			System.out.println("ERROR: checksum was not set correctly");
+			return;
+		}
 
-		packet.serialize();
+		packet.serialize(); // recomputes checksum for us when 0
+		if (packet.getChecksum() == 0) {
+			System.out.println("ERROR: checksum was not set correctly by serialize");
+			return;
+		}
 		short sum = packet.getChecksum();
 
 		if(orig != sum) {
@@ -118,7 +129,11 @@ public class Router extends Device
 		}
 
         // ttl check
-		packet = packet.setTtl((byte) (packet.getTtl()-1));
+		byte ttl = packet.getTtl();
+		packet.setTtl((byte) (packet.getTtl()-1));
+		if (packet.getTtl() == ttl) {
+			System.out.println("ERROR: ttl was not set correctly");
+		}
 
 		if (packet.getTtl() <= (byte) 0) {
 			System.out.println("TTL was 0");
@@ -135,6 +150,12 @@ public class Router extends Device
 			}
 		}
 		//System.out.println("Packet Dest: "+ IPv4.fromIPv4Address(packet.getDestinationAddress()));
+		// NEED TO RECOMPUTE THE CHECKSUM AFTER CHANGING TTL
+		packet.resetChecksum();
+		packet.serialize();
+		if (packet.getChecksum() == 0) {
+			System.out.println("ERROR: checksum not set properly after reset");
+		}
 
 		Ethernet eth = (Ethernet)etherPacket.setPayload(packet);
 		RouteEntry entry = routeTable.lookup(packet.getDestinationAddress());
