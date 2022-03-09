@@ -154,7 +154,7 @@ public class Router extends Device
         System.out.println("\nSending:");
 		System.out.println(eth);
         // checks for standard packet
-        if (eth.getChecksum() <= 0) System.out.println("Sending Bad Packet: checksum");
+        if (eth.getEtherType() != Ethernet.TYPE_IPv4) System.out.println("Sending Bad Packet: non IPv4");
 
 		sendPacket(eth, entry.getInterface());
 		System.out.println("Packet was sent to: " + entry.getInterface().getName());
