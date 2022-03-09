@@ -173,8 +173,8 @@ public class Router extends Device
 		if (arpEntry == null) return;
 			
 		MACAddress addr = arpEntry.getMac();
-		eth = eth.setDestinationMACAddress(addr.toBytes());
-		eth = eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+		eth.setDestinationMACAddress(addr.toBytes());
+		eth.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 
 		// checks for standard packet
 		if (!sendPacket(eth, entry.getInterface()))
